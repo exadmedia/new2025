@@ -195,7 +195,7 @@
       border: none;
     }
   </style>
-  <title>辰年年賀状</title>
+  <title>巳年年賀状</title>
 </head>
 <body>
   <video id="video-background" autoplay loop muted>
