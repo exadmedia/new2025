@@ -71,8 +71,6 @@
     overflow: hidden;
     display: flex; /* 子要素を中央に配置するため */
     justify-content: center; /* 水平中央揃え */
-    position: absolute; /* 絶対位置指定 */
-    bottom: 20%; /* 下から20%の位置に */
 }
 
     #omikuji-video {
@@ -109,7 +107,7 @@ button {
     background-size: 200% auto;
     transition: all 0.3s ease-out;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  z-index: 1; /* 他の要素の上に来るように */
+
 }
 
 button:hover {
