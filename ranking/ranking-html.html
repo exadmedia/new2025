@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>🐍 Snake Game Ranking</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-family: 'Press Start 2P', cursive;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .period-btn {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .period-btn.active {
+            background: white;
+            color: #ff6b6b;
+        }
+
+        .search-input {
+            padding: 8px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .ranking-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .ranking-item.top-3 {
+            background: linear-gradient(45deg, #ffd700, #fff7e6);
+        }
+
+        .rank-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .rank-number {
+            font-size: 24px;
+            font-weight: bold;
+            width: 40px;
+            text-align: center;
+        }
+
+        .player-info {
+            line-height: 1.4;
+        }
+
+        .player-name {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .player-details {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .score {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 20px;
+            color: #2ecc71;
+        }
+
+        .load-more {
+            width: 100%;
+            padding: 12px;
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        .load-more:hover {
+            background: #d0d0d0;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .error {
+            background: #ffe6e6;
+            color: #ff3333;
+        }
+
+        .success {
+            background: #e6ffe6;
+            color: #33cc33;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🐍 Snake Game Ranking 🏆</h1>
+            <div class="controls">
+                <div>
+                    <button class="period-btn active" onclick="changePeriod('all')">All Time</button>
+                    <button class="period-btn" onclick="changePeriod('monthly')">Monthly</button>
+                    <button class="period-btn" onclick="changePeriod('weekly')">Weekly</button>
+                </div>
+                <input type="text" class="search-input" placeholder="プレイヤー名で検索..." 
+                       onkeyup="handleSearch(this.value)">
+            </div>
+        </div>
+
+        <div id="status"></div>
+        <div id="rankings"></div>
+        <button id="loadMore" class="load-more" onclick="loadMoreRankings()" style="display: none;">
+            もっと見る
+        </button>
+    </div>
+
+    <script>
+        // Firebase設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyBdTU5BGfpHiFfQ18q7DybNpNI31mX9d74",
+            authDomain: "snake-game-ranking-61539.firebaseapp.com",
+            projectId: "snake-game-ranking-61539",
+            storageBucket: "snake-game-ranking-61539.appspot.com",
+            messagingSenderId: "1038086841957",
+            appId: "1:1038086841957:web:d03ed9aad56afa3d03488c"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let lastDoc = null;
+        let currentPeriod = 'all';
+        let searchTerm = '';
+        const ITEMS_PER_PAGE = 10;
+
+        function showStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = isError ? 'error' : 'success';
+            setTimeout(() => status.textContent = '', 3000);
+        }
+
+        function getRankEmoji(index) {
+            return index === 0 ? '🥇' : 
+                   index === 1 ? '🥈' : 
+                   index === 2 ? '🥉' : 
+                   (index + 1).toString();
+        }
+
+        async function loadRankings(isReset = false) {
+            try {
+                const rankingsDiv = document.getElementById('rankings');
+                const loadMoreBtn = document.getElementById('loadMore');
+                
+                if (isReset) {
+                    rankingsDiv.innerHTML = '<div class="loading">Loading...</div>';
+                    lastDoc = null;
+                }
+
+                let query = db.collection('SnakeScores').orderBy('score', 'desc');
+
+                if (currentPeriod !== 'all') {
+                    const date = new Date();
+                    if (currentPeriod === 'monthly') {
+                        date.setMonth(date.getMonth() - 1);
+                    } else {
+                        date.setDate(date.getDate() - 7);
+                    }
+                    query = query.where('timestamp', '>=', date);
+                }
+
+                if (lastDoc) {
+                    query = query.startAfter(lastDoc);
+                }
+
+                query = query.limit(ITEMS_PER_PAGE);
+                const snapshot = await query.get();
+
+                if (isReset) {
+                    rankingsDiv.innerHTML = '';
+                }
+
+                snapshot.forEach((doc, index) => {
+                    const data = doc.data();
+                    const rankIndex = isReset ? index : document.querySelectorAll('.ranking-item').length;
+                    const date = data.timestamp.toDate().toLocaleDateString();
+                    
+                    const div = document.createElement('div');
+                    div.className = `ranking-item ${rankIndex < 3 ? 'top-3' : ''}`;
+                    div.innerHTML = `
+                        <div class="rank-info">
+                            <div class="rank-number">${getRankEmoji(rankIndex)}</div>
+                            <div class="player-info">
+                                <div class="player-name">${data.name}</div>
+                                <div class="player-details">Stage ${data.stage} • ${date}</div>
+                            </div>
+                        </div>
+                        <div class="score">${data.score.toLocaleString()} pts</div>
+                    `;
+                    rankingsDiv.appendChild(div);
+                });
+
+                lastDoc = snapshot.docs[snapshot.docs.length - 1];
+                loadMoreBtn.style.display = snapshot.docs.length >= ITEMS_PER_PAGE ? 'block' : 'none';
+
+            } catch (error) {
+                showStatus('ランキングの読み込みに失敗しました: ' + error.message, true);
+            }
+        }
+
+        function changePeriod(period) {
+            currentPeriod = period;
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadRankings(true);
+        }
+
+        let searchTimeout;
+        function handleSearch(value) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchTerm = value;
+                loadRankings(true);
+            }, 300);
+        }
+
+        function loadMoreRankings() {
+            loadRankings();
+        }
+
+        // 初期読み込み
+        loadRankings(true);
+    </script>
+</body>
+</html>
