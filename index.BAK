@@ -37,7 +37,7 @@
       height: 100%;
       object-fit: cover;
       overflow: hidden;
-mix-blend-mode:color;
+mix-blend-mode:difference;
       z-index: -1;
     }
     #greeting-card {
