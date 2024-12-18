@@ -60,17 +60,18 @@
       box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     }
 
-    #video-container {
-      margin-top: 0px;
-      margin-bottom: 30px;
-      width: 97%;
-      max-width: 450px;
-      max-height: auto;
-      min-width: 250px;
-      min-height: 250px;
-      border-radius: 50px;
-      overflow: hidden;
-    }
+#video-container {
+    margin-top: 0px;
+    margin-bottom: 30px;
+    width: 100%; /* 親要素の幅いっぱいに */
+    max-width: 350px; /* 最大幅を設定 */
+    max-height: none;
+    min-width: 300px; /* 最小幅を設定 */
+    border-radius: 15px;
+    overflow: hidden;
+    display: flex; /* 子要素を中央に配置するため */
+    justify-content: center; /* 水平中央揃え */
+}
 
     #omikuji-video {
       width: 100%;
@@ -79,37 +80,43 @@
       opacity: 0.9;
     }
 
-    button {
-    position: relative;
+button {
+    max-width: 100%; /* 親コンテナの幅に合わせる */
+    width: 100%; /* 親コンテナの幅いっぱいに */
+    min-width: 100px; /* 最小幅を設定 */
+    font-size: clamp(14px, 3vw, 18px); /* レスポンシブなフォントサイズ */
+    padding: clamp(10px, 2.5vw, 15px) clamp(20px, 5vw, 30px); /* レスポンシブなパディング */
+    height: auto; /* 高さを自動に */
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    margin: 0 auto;
-    border-radius: 9999px;
-    max-width: 250px;
-    padding: 10px 25px;
+    border-radius: 50px;
+    padding: 15px 30px; /* パディングを調整 */
     font-family: "Noto Sans Japanese";
     color: #fff;
-    line-height: 1.8;
+    line-height: 1.2; /* 行間を狭める */
     text-decoration: none;
     transition: 0.3s ease-in-out;
-    font-weight: 500;
+    font-weight: 700;
     background: linear-gradient(270deg, #3bade3 0%, #576fe6 25%, #9844b7 51%, #ff357f 100%);
     background-position: 1% 50%;
     background-size: 200% auto;
     transition: all 0.3s ease-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
 }
-    }
 
-    button:hover {
-    color: #fff;
+button:hover {
+    transform: scale(1.1) translateX(-50%);
     background-position: 99% 50%;
-    transform: scale(1.05);
-    /*ボックスの影*/  
-    box-shadow: 0 15px 15px rgba(87,111,230,0.4);
-    }
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
 
-    button:after {
+button:after {
     content: '';
     width: 5px;
     height: 5px;
@@ -118,11 +125,10 @@
     transform: rotate(45deg) translateY(-50%);
     position: absolute;
     top: 50%;
-    right: 20px;
+    right: 30px; /* 右の位置を調整 */
     border-radius: 1px;
     transition: 0.3s ease-in-out;
 }
-
 
     #omikuji-result {
       margin-top: -50px;
@@ -246,7 +252,7 @@
   </span></h3>
   <div id="video-container">
     <a href="https://v0.dev/chat/YMiSalcMIoD?b=b_eAtXgCBAiCw" target="_blank" class="animated" style="animation: fadeIn 1s;">
-      <button>スネークゲームをプレイ</button>
+      <button>ゲームをプレイ</button>
     </a>
   </div>
 </div>
