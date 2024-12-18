@@ -80,19 +80,49 @@
     }
 
     button {
-      background-color: #00686b;
-      color: white;
-      padding: 10px 20px;
-      font-size: 30px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s;
+    position: relative;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 0 auto;
+    border-radius: 9999px;
+    max-width: 250px;
+    padding: 10px 25px;
+    font-family: "Noto Sans Japanese";
+    color: #fff;
+    line-height: 1.8;
+    text-decoration: none;
+    transition: 0.3s ease-in-out;
+    font-weight: 500;
+    background: linear-gradient(270deg, #3bade3 0%, #576fe6 25%, #9844b7 51%, #ff357f 100%);
+    background-position: 1% 50%;
+    background-size: 200% auto;
+    transition: all 0.3s ease-out;
+}
     }
 
     button:hover {
-      background-color: #000;
+    color: #fff;
+    background-position: 99% 50%;
+    transform: scale(1.05);
+    /*ボックスの影*/  
+    box-shadow: 0 15px 15px rgba(87,111,230,0.4);
     }
+
+    button:after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-top: 3px solid #fff;
+    border-right: 3px solid #fff;
+    transform: rotate(45deg) translateY(-50%);
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    border-radius: 1px;
+    transition: 0.3s ease-in-out;
+}
+
 
     #omikuji-result {
       margin-top: -50px;
@@ -216,7 +246,7 @@
   </span></h3>
   <div id="video-container">
     <a href="https://v0.dev/chat/YMiSalcMIoD?b=b_eAtXgCBAiCw" target="_blank" class="animated" style="animation: fadeIn 1s;">
-      <button>ゲームをプレイ</button>
+      <button>スネークゲームをプレイ</button>
     </a>
   </div>
 </div>
@@ -257,7 +287,7 @@
 
         setTimeout(() => {
           // ポップアップメッセージを表示
-          showPopupMessage('これらの動画はAIによって作られました。\n未来への情熱と共に、クリエイティブな躍進を。\nより素晴らしい未来を切り開いていきましょう！');
+          showPopupMessage('このゲームはAIによって作られました。\nCURIOSITY DRIVEN（好奇心的駆動）をモットーに\nエクス・アドメディアは突き進みます！');
         }, 4500);
 
       }, 4500);
