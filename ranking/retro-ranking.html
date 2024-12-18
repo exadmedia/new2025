@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Snake Game Ranking</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .title {
+            font-size: 24px;
+            margin: 0;
+            text-shadow: 3px 3px 0 #ff5252;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .period-btn {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .period-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .period-btn.active {
+            background: white;
+            color: #ff6b6b;
+        }
+
+        .ranking-item {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ranking-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .ranking-item.top-1 {
+            background: linear-gradient(45deg, #ffd700, #fff7e6);
+        }
+
+        .ranking-item.top-2 {
+            background: linear-gradient(45deg, #e0e0e0, #f5f5f5);
+        }
+
+        .ranking-item.top-3 {
+            background: linear-gradient(45deg, #cd7f32, #fff1e6);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .rank {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 24px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .player-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .player-stats {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .score {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 20px;
+            color: #ff6b6b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 10px;
+            margin: 20px 0;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .empty-state .pixel-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state .message {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .empty-state .sub-message {
+            color: #999;
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #status {
+            text-align: center;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            color: #4a4a4a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🐍 SNAKE RANKING 🏆</h1>
+            <div class="controls">
+                <button class="period-btn active" onclick="changePeriod('all')">ALL TIME</button>
+                <button class="period-btn" onclick="changePeriod('monthly')">MONTHLY</button>
+                <button class="period-btn" onclick="changePeriod('weekly')">WEEKLY</button>
+            </div>
+        </div>
+        <div id="status"></div>
+        <div id="rankings"></div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBdTU5BGfpHiFfQ18q7DybNpNI31mX9d74",
+            authDomain: "snake-game-ranking-61539.firebaseapp.com",
+            projectId: "snake-game-ranking-61539",
+            storageBucket: "snake-game-ranking-61539.appspot.com",
+            messagingSenderId: "1038086841957",
+            appId: "1:1038086841957:web:d03ed9aad56afa3d03488c"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        let currentPeriod = 'all';
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        function formatRank(index) {
+            const rank = index + 1;
+            if (rank === 1) return '🥇';
+            if (rank === 2) return '🥈';
+            if (rank === 3) return '🥉';
+            return `${rank}`;
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp || !timestamp.seconds) return '日付なし';
+            return new Date(timestamp.seconds * 1000).toLocaleString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function changePeriod(period) {
+            currentPeriod = period;
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadRankings();
+        }
+
+        async function loadRankings() {
+            try {
+                updateStatus('LOADING...');
+                let query = db.collection('SnakeScores').orderBy('score', 'desc');
+
+                if (currentPeriod !== 'all') {
+                    const date = new Date();
+                    if (currentPeriod === 'monthly') {
+                        date.setMonth(date.getMonth() - 1);
+                    } else {
+                        date.setDate(date.getDate() - 7);
+                    }
+                    query = query.where('timestamp', '>=', date);
+                }
+
+                const snapshot = await query.get();
+
+                if (snapshot.empty) {
+                    document.getElementById('rankings').innerHTML = `
+                        <div class="empty-state">
+                            <div class="pixel-icon">🏆</div>
+                            <div class="message">NO DATA</div>
+                            <div class="sub-message">チャレンジして最初の記録を作ろう！</div>
+                        </div>
+                    `;
+                    updateStatus('NO RANKING DATA');
+                    return;
+                }
+
+                let html = '';
+                let index = 0;
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    html += `
+                        <div class="ranking-item ${index < 3 ? 'top-' + (index + 1) : ''}">
+                            <div class="player-info">
+                                <div class="rank">${formatRank(index)}</div>
+                                <div>
+                                    <div class="player-name">${data.userId}</div>
+                                    <div class="player-stats">
+                                        STAGE ${data.stage} • TIME ${data.playtime}s<br>
+                                        ${formatDate(data.timestamp)}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="score">${data.score.toLocaleString()} PTS</div>
+                        </div>
+                    `;
+                    index++;
+                });
+
+                document.getElementById('rankings').innerHTML = html;
+                updateStatus(`${snapshot.size} PLAYERS RANKED`);
+
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus('ERROR: RELOAD GAME');
+            }
+        }
+
+        // 初期読み込み
+        loadRankings();
+    </script>
+</body>
+</html>
