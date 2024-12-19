@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Snake Game Score Debug</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input { padding: 5px; width: 200px; }
+        button { padding: 10px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .score-item { border: 1px solid #ddd; padding: 10px; margin: 10px 0; }
+        .error { color: red; margin: 10px 0; }
+        .success { color: green; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Snake Game Score Debug</h1>
+    
+    <div id="status" style="margin-bottom: 20px;"></div>
+
+    <div class="form-group">
+        <h2>新しいスコアを追加</h2>
+        <div class="form-group">
+            <label>スコア:</label>
+            <input type="number" id="score" value="0">
+        </div>
+        <div class="form-group">
+            <label>ステージ:</label>
+            <input type="number" id="stage" value="1">
+        </div>
+        <div class="form-group">
+            <label>プレイ時間:</label>
+            <input type="text" id="playtime" value="0">
+        </div>
+        <div class="form-group">
+            <label>ユーザーID:</label>
+            <input type="text" id="userId" value="TestUser">
+        </div>
+        <button onclick="addScore()">スコアを追加</button>
+    </div>
+
+    <h2>保存されているスコア</h2>
+    <div id="scoresList"></div>
+
+    <script>
+        // Firebaseの設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyBdTU5BGfpHiFfQ18q7DybNpNI31mX9d74",
+            authDomain: "snake-game-ranking-61539.firebaseapp.com",
+            projectId: "snake-game-ranking-61539",
+            storageBucket: "snake-game-ranking-61539.appspot.com",
+            messagingSenderId: "1038086841957",
+            appId: "1:1038086841957:web:d03ed9aad56afa3d03488c"
+        };
+
+        // Firebase初期化
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ステータス表示関数
+        function showStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = isError ? 'error' : 'success';
+        }
+
+        // スコア追加関数
+        async function addScore() {
+            try {
+                const score = parseInt(document.getElementById('score').value);
+                const stage = parseInt(document.getElementById('stage').value);
+                const playtime = document.getElementById('playtime').value;
+                const userId = document.getElementById('userId').value;
+
+                await db.collection('SnakeScores').add({
+                    score: score,
+                    stage: stage,
+                    playtime: playtime,
+                    userId: userId,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showStatus('スコアが正常に追加されました');
+                loadScores(); // スコア一覧を更新
+            } catch (error) {
+                showStatus('スコアの追加に失敗しました: ' + error.message, true);
+            }
+        }
+
+        // スコア削除関数
+        async function deleteScore(id) {
+            try {
+                await db.collection('SnakeScores').doc(id).delete();
+                showStatus('スコアが正常に削除されました');
+                loadScores(); // スコア一覧を更新
+            } catch (error) {
+                showStatus('スコアの削除に失敗しました: ' + error.message, true);
+            }
+        }
+
+        // スコア読み込み関数
+        async function loadScores() {
+            try {
+                const scoresList = document.getElementById('scoresList');
+                scoresList.innerHTML = 'Loading...';
+
+                const snapshot = await db.collection('SnakeScores')
+                    .orderBy('timestamp', 'desc')
+                    .get();
+
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : 'No timestamp';
+                    html += `
+                        <div class="score-item">
+                            <strong>スコア: ${data.score}</strong><br>
+                            ステージ: ${data.stage}<br>
+                            プレイ時間: ${data.playtime}<br>
+                            ユーザー: ${data.userId}<br>
+                            時刻: ${date}<br>
+                            <button onclick="deleteScore('${doc.id}')">削除</button>
+                        </div>
+                    `;
+                });
+
+                scoresList.innerHTML = html || 'スコアがありません';
+            } catch (error) {
+                showStatus('スコアの読み込みに失敗しました: ' + error.message, true);
+            }
+        }
+
+        // 初期読み込み
+        loadScores();
+    </script>
+</body>
+</html>

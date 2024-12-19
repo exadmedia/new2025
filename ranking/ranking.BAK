@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game Ranking</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+<body>
+    <h1>Snake Game Ranking</h1>
+    <div id="ranking"></div>
+
+    <script>
+        // Firebaseの設定
+        var firebaseConfig = {
+            apiKey: "AIzaSyBdTU5BGfpHiFfQ18q7DybNpNI31mX9d74",
+            authDomain: "snake-game-ranking-61539.firebaseapp.com",
+            projectId: "snake-game-ranking-61539",
+            storageBucket: "snake-game-ranking-61539.appspot.com",
+            messagingSenderId: "1038086841957",
+            appId: "1:1038086841957:web:d03ed9aad56afa3d03488c"
+        };
+
+        // Firebaseの初期化
+        firebase.initializeApp(firebaseConfig);
+        var db = firebase.firestore();
+
+        // トップランキングを取得して表示
+        function getTopRanking() {
+            db.collection("scores")
+                .orderBy("score", "desc")
+                .limit(10) // トップ10のランキングを取得
+                .get()
+                .then((querySnapshot) => {
+                    let rankingList = document.getElementById('ranking');
+                    rankingList.innerHTML = '';
+                    querySnapshot.forEach((doc) => {
+                        let data = doc.data();
+                        let li = document.createElement('li');
+                        li.textContent = `User: ${data.userId}, Score: ${data.score}`;
+                        rankingList.appendChild(li);
+                    });
+                })
+                .catch((error) => {
+                    console.log("Error getting documents: ", error);
+                });
+        }
+
+        // ページが読み込まれたらランキングを取得
+        window.onload = getTopRanking;
+    </script>
+</body>
+</html>

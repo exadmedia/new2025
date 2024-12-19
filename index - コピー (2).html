@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  /* v1.2 2023/12/18 */
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #161616;
+    }
+    h3 {
+      font-family: "Paytone One";
+      color: #e94709; /* 赤い色に変更 */
+      text-transform: uppercase;
+      letter-spacing: -2px;
+    }
+
+    h3 span {
+      display: block;
+      margin: 11px 0 17px 0;
+      font-size: 100px;
+      line-height: 20px;
+      color: #e94709;
+      text-shadow: 0 13.36px 8.896px #c43333, 0 -2px 1px #f00;
+      letter-spacing: -4px;
+    }
+    #video-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    #greeting-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 20px auto;
+      height: 35vh;
+      color: #f33;
+      text-align: center;
+      position: relative;
+      z-index: 0;
+      opacity: 0.95;
+    }
+
+    #year-of-the-dragon {
+      width: 30%;
+      max-width: 150px;
+      height: auto;
+      margin: 20px auto;
+      border-radius: 50px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+#video-container {
+    margin-top: 0px;
+    margin-bottom: 30px;
+    width: 100%; /* 親要素の幅いっぱいに */
+    max-width: 350px; /* 最大幅を設定 */
+    max-height: none;
+    min-width: 300px; /* 最小幅を設定 */
+    border-radius: 15px;
+    overflow: hidden;
+    display: flex; /* 子要素を中央に配置するため */
+    justify-content: center; /* 水平中央揃え */
+}
+
+    #omikuji-video {
+      width: 100%;
+      height: auto;
+      border-radius: 50px;
+      opacity: 0.9;
+    }
+
+button {
+    max-width: 100%; /* 親コンテナの幅に合わせる */
+    width: 100%; /* 親コンテナの幅いっぱいに */
+    min-width: 100px; /* 最小幅を設定 */
+    font-size: clamp(14px, 3vw, 18px); /* レスポンシブなフォントサイズ */
+    padding: clamp(10px, 2.5vw, 15px) clamp(20px, 5vw, 30px); /* レスポンシブなパディング */
+    height: auto; /* 高さを自動に */
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 50px;
+    padding: 15px 30px; /* パディングを調整 */
+    font-family: "Noto Sans Japanese";
+    color: #fff;
+    line-height: 1.2; /* 行間を狭める */
+    text-decoration: none;
+    transition: 0.3s ease-in-out;
+    font-weight: 700;
+    background: linear-gradient(270deg, #3bade3 0%, #576fe6 25%, #9844b7 51%, #ff357f 100%);
+    background-position: 1% 50%;
+    background-size: 200% auto;
+    transition: all 0.3s ease-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
+}
+
+button:hover {
+    transform: scale(1.1) translateX(-50%);
+    background-position: 99% 50%;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+button:after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-top: 3px solid #fff;
+    border-right: 3px solid #fff;
+    transform: rotate(45deg) translateY(-50%);
+    position: absolute;
+    top: 50%;
+    right: 30px; /* 右の位置を調整 */
+    border-radius: 1px;
+    transition: 0.3s ease-in-out;
+}
+
+    #omikuji-result {
+      margin-top: -50px;
+      font-size: 80px;
+      font-weight: bold;
+      text-align: center;
+      position: relative;
+    }
+
+    .pattern {
+      background: repeating-radial-gradient(circle at -150% -25%, #fff, #777 3px, #fff 3px);
+      background-position: 50% 50%;
+      background-size: 120% 120%;
+      mix-blend-mode: color-dodge;
+      opacity: 0.3;
+    }
+
+    .color {
+      background: linear-gradient(115deg, transparent 20%, #40A4BF 30%, transparent 48% 52%, #404FBF 70%, transparent);
+      background-position: 50% 50%;
+      background-size: 200% 200%;
+      mix-blend-mode: overlay;
+    }
+
+    .card-wrapper:hover > .pattern {
+      background-position: calc(50% + (var(--ratio-x) * -50%)) calc(50% + (var(--ratio-y) * -50%));
+    }
+
+    .card-wrapper:hover > .color {
+      background-position: calc(50% + (var(--ratio-x) * -50%)) calc(50% + (var(--ratio-y) * -50%));
+    }
+
+    .card-wrapper:hover > .highlight {
+      background: radial-gradient(circle at calc(var(--ratio-x) * 100%) calc(var(--ratio-y) * 100%), hsl(0 0% 100% / 0.2), transparent 50%);
+      background-repeat: no-repeat;
+    }
+
+    .card {
+      aspect-ratio: 4 / 3;
+      border-radius: 4.5% / 3.5%;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, .2);
+      height: 100%;
+      position: absolute;
+      width: 100%;
+    }
+
+    .card-wrapper {
+      aspect-ratio: 4 / 3;
+      display: grid;
+      height: calc(95% - 32px);
+      max-width: 95%;
+      place-items: center;
+      position: absolute;
+      transition: transform 0.3s ease;
+    }
+
+    body {
+      background-color: #212529;
+      display: grid;
+      height: calc(100vh - 32px);
+      margin: 0;
+      padding: 16px;
+      place-items: center;
+      position: relative;
+      width: calc(100% - 32px);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes scaleUp {
+      from {
+        transform: scale(0.8);
+      }
+      to {
+        transform: scale(1);
+      }
+    }
+
+    /* 新しいスタイル追加 */
+    #game-container {
+      width: 100%;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      display: none; /* 初期状態では非表示 */
+    }
+
+    #game-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+  <title>巳年年賀状</title>
+</head>
+<body>
+  <video id="video-background" autoplay loop muted>
+    <source src="vid/bg.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div class="card-wrapper">
+    <img src="img/1.jpg" class="card">
+    <div class="card pattern"></div>
+    <div class="card color"></div>
+    <div class="card highlight"></div>
+  </div>
+
+<div id="greeting-card">
+  <h3><span>
+      <p id="omikuji-result"></p>
+  </span></h3>
+  <div id="video-container">
+    <a href="https://kzmkbd8lv5ldnwk268hi.lite.vusercontent.net/" target="_blank" class="animated" style="animation: fadeIn 1s;">
+      <button>ゲームをプレイ</button>
+    </a>
+  </div>
+</div>
+  <script>
+    function showPopupMessage(message) {
+      alert(message);
+    }
+
+    function omikuji() {
+      document.getElementById('snake-game-button').disabled = true;
+
+      var results = [
+        { fortune: '超大吉', video: 'vid/1.mp4' },
+        { fortune: '大吉', video: 'vid/2.mp4' },
+        { fortune: '中吉', video: 'vid/3.mp4' },
+        { fortune: '末吉', video: 'vid/4.mp4' },
+        { fortune: '小吉', video: 'vid/5.mp4' },
+        { fortune: '吉', video: 'vid/6.mp4' }
+      ];
+
+      var randomIndex = Math.floor(Math.random() * results.length);
+      var result = results[randomIndex];
+
+      playConfettiEffect();
+      playExcitingSoundEffect();
+      confetti();
+
+      setTimeout(() => {
+        var videoContainer = document.getElementById('video-container');
+        videoContainer.innerHTML = `
+          <video id="omikuji-video" autoplay loop muted>
+            <source src="${result.video}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        `;
+
+        document.getElementById('omikuji-result').textContent = result.fortune;
+
+        setTimeout(() => {
+          // ポップアップメッセージを表示
+          showPopupMessage('このゲームはAIによって作られました。\nCURIOSITY DRIVEN（好奇心的駆動）をモットーに\nエクス・アドメディアは突き進みます！');
+        }, 4500);
+
+      }, 4500);
+    }
+
+    function playConfettiEffect() {
+      // 紙吹雪やコンフェッティのエフェクトを作成
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      document.body.appendChild(confetti);
+
+      // エフェクトを開始
+      setTimeout(() => {
+        confetti.remove();
+      }, 4500);
+    }
+
+    function playExcitingSoundEffect() {
+      // ワクワク感を高めるSEを再生
+      const audio = new Audio('SE/拍子木3.mp3');
+      audio.play();
+    }
+
+    function startSnakeGame() {
+      var gameContainer = document.getElementById('game-container');
+      var gameFrame = document.getElementById('game-frame');
+      
+      gameContainer.style.display = 'block'; // ゲームコンテナを表示
+
+      // iframeにゲームのURLを設定
+      gameFrame.src = 'https://v0.dev/chat/YMiSalcMIoD?b=b_eAtXgCBAiCw';
+    }
+
+    const CARD = document.querySelector('.card-wrapper');
+
+    const UPDATE = ({ x, y }) => {
+      const BOUNDS = CARD.getBoundingClientRect();
+      const posX = x - BOUNDS.x;
+      const posY = y - BOUNDS.y;
+      const ratioX = posX / BOUNDS.width;
+      const ratioY = posY / BOUNDS.height;
+      CARD.style.setProperty('--ratio-x', ratioX);
+      CARD.style.setProperty('--ratio-y', ratioY);
+    };
+
+    document.body.addEventListener('pointermove', UPDATE);
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.2/dist/confetti.browser.min.js"></script>
+  <script>
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  </script>
+</body>
+</html>
