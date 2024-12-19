@@ -1,0 +1,71 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+.game-container {
+    text-align: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #333;
+    animation: colorChange 5s infinite alternate;
+}
+
+@keyframes colorChange {
+    0% { color: #333; }
+    50% { color: #4CAF50; }
+    100% { color: #2196F3; }
+}
+
+canvas {
+    border: 2px solid #333;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.3s ease;
+}
+
+canvas:hover {
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+#score {
+    font-size: 24px;
+    margin-top: 10px;
+    transition: transform 0.3s ease;
+}
+
+#score:hover {
+    transform: scale(1.1);
+}
+
+#highScores {
+    margin-top: 20px;
+}
+
+#highScores h2 {
+    font-size: 20px;
+    color: #333;
+}
+
+#highScores ol {
+    padding-left: 20px;
+}
+
+#highScores li {
+    transition: transform 0.2s ease;
+}
+
+#highScores li:hover {
+    transform: translateX(5px);
+}
+
