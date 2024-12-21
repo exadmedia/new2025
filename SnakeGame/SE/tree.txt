@@ -1,0 +1,20 @@
+フォルダー パスの一覧:  ボリューム NVMe
+ボリューム シリアル番号は AEED-41F4 です
+C:.
+    BossDamage.mp3
+    BossFire1.mp3
+    BossFire2.mp3
+    BossFire3.mp3
+    BossFire4.mp3
+    BossFire5.mp3
+    BossFire6.mp3
+    BossFire7.mp3
+    GameClear.mp3
+    GameOver.mp3
+    GetApple.mp3
+    invincible.mp3
+    SnakeDamage.mp3
+    tree.txt
+    
+サブフォルダーは存在しません 
+
